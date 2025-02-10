@@ -39,7 +39,7 @@ avg_length = $((total_length / num_sequences))
 gc_content = ((100* gc_total / base_total))
 
   
-  print total_length
+  print "FASTA File Statistics:"
   print longest_length
   print shortest_length
   print avg_length
@@ -47,14 +47,6 @@ gc_content = ((100* gc_total / base_total))
 
   
 }')
-
-#variables using head and tail
-
-total_length=$(echo "$awk_output" | head -n 2 | tail -n 1)
-longest_length=$(echo "$awk_output" | head -n 3 | tail -n 1)
-shortest_length=$(echo "$awk_output" | head -n 4 | tail -n 1)
-avg_length=$(echo "$awk_output" | head -n 5 | tail -n 1)
-gc_content=$(echo "$awk_output" | tail -n 1)
 
 
 # Print results
