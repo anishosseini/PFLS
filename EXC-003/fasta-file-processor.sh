@@ -34,7 +34,7 @@ awk_output=$(echo "$sequences" | awk '
 }
 
 END {
-avg_length = (total_length / num_sequences)
+avg_length = $((total_length / num_sequences))
 
 gc_content = ((100* gc_total / base_total))
 
