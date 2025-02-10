@@ -48,7 +48,7 @@ gc_content = ((100* gc_total / base_total))
   
 }')
 
-variables using head and tail
+#variables using head and tail
 
 total_length=$(echo "$awk_output" | head -n 2 | tail -n 1)
 longest_length=$(echo "$awk_output" | head -n 3 | tail -n 1)
