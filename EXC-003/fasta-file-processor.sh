@@ -1,7 +1,17 @@
 
 
+num_sequences=$(grep -c "^>" "$1")
 
-sequences=$(grep -v "^>" "$1")
+
+sequences=$(awk '
+  /^>/ { 
+    if (seq != "") print seq; 
+    seq = "" 
+    next 
+  } 
+  { seq = seq $0 } 
+  END { print seq }' "$1")
+
 
 awk_output=$(echo "$sequences" | awk '
 {
@@ -24,11 +34,11 @@ awk_output=$(echo "$sequences" | awk '
 }
 
 END {
-  avg_length = total_length / num_sequences
+avg_length = total_length / num_sequences
 
 gc_content = ((100* gc_total / base_total))
 
-  print num_sequences
+  
   print total_length
   print longest_length
   print shortest_length
@@ -39,7 +49,7 @@ gc_content = ((100* gc_total / base_total))
 }')
 
 variables using head and tail
-num_sequences=$(echo "$awk_output" | head -n 1)
+
 total_length=$(echo "$awk_output" | head -n 2 | tail -n 1)
 longest_length=$(echo "$awk_output" | head -n 3 | tail -n 1)
 shortest_length=$(echo "$awk_output" | head -n 4 | tail -n 1)
