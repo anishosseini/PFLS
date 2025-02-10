@@ -17,9 +17,9 @@ awk_output=$(echo "$sequences" | awk '
 {
   seq_length = length($0)
   total_length += seq_length
-  num_sequences++
+  
 
-  # Check for longest and shortest sequence
+  
   if (seq_length > longest_length) {
     longest_length = seq_length
   }
@@ -34,7 +34,7 @@ awk_output=$(echo "$sequences" | awk '
 }
 
 END {
-avg_length = total_length / num_sequences
+avg_length = (total_length / num_sequences)
 
 gc_content = ((100* gc_total / base_total))
 
