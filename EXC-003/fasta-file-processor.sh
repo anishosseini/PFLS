@@ -4,15 +4,6 @@
 sequences=$(grep -v "^>" "$1")
 
 awk_output=$(echo "$sequences" | awk '
-BEGIN {
-  total_length = 0
-  num_sequences = 0
-  longest_length = 0
-  shortest_length = 999999 
-  gc_total = 0
-  base_total = 0
-}
-
 {
   seq_length = length($0)
   total_length += seq_length
