@@ -39,7 +39,7 @@ avg_length = $((total_length / num_sequences))
 gc_content = ((100* gc_total / base_total))
 
   
-  print "FASTA File Statistics:"
+  print total_length
   print longest_length
   print shortest_length
   print avg_length
