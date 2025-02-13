@@ -8,21 +8,23 @@ SAMPLE_TRANSLATION="$RAW_DATA/sample-translation.txt"
 # Ensure the COMBINED-DATA directory exists
 mkdir -p "$COMBINED_DATA"
 
-# Read sample-translation.txt without associative arrays
-while IFS=$'\t' read -r lib_name culture_name; do
-    echo "$lib_name $culture_name" >> sample_map.txt
-done < "$SAMPLE_TRANSLATION"
-
 # Loop through each directory in RAW-DATA
 for dir in "$RAW_DATA"/DNA*; do
     if [[ -d "$dir" ]]; then
         LIB_NAME=$(basename "$dir")
-        CULTURE_NAME=$(grep "^$LIB_NAME " sample_map.txt | awk '{print $2}')
+        CULTURE_NAME=$(grep "^$LIB_NAME" "$SAMPLE_TRANSLATION" | awk -F'\t' '{print $2}')
+        
+        if [[ -z "$CULTURE_NAME" ]]; then
+            echo "Warning: No culture name found for $LIB_NAME in sample-translation.txt" >&2
+            continue
+        fi
+        
+        # Reset numbering for each culture
+        MAG_COUNT=1
+        BIN_COUNT=1
         
         # Process bins
         BIN_DIR="$dir/bins"
-        MAG_COUNT=1
-        BIN_COUNT=1
         
         if [[ -d "$BIN_DIR" ]]; then
             for file in "$BIN_DIR"/*.fasta; do
@@ -47,10 +49,20 @@ for dir in "$RAW_DATA"/DNA*; do
                     BIN_ID=${BASENAME%.fasta}
                     
                     # Extract completion and contamination from checkm.txt
-                    COMPLETION=$(grep "$BIN_ID" "$dir/checkm.txt" | awk '{print $(NF-1)}')
-                    CONTAMINATION=$(grep "$BIN_ID" "$dir/checkm.txt" | awk '{print $NF}')
+                    COMPLETION=$(awk -v bin="$BIN_ID" '$1 ~ bin || $1 ~ "_" bin {print $13}' "$dir/checkm.txt")
+                    CONTAMINATION=$(awk -v bin="$BIN_ID" '$1 ~ bin || $1 ~ "_" bin {print $14}' "$dir/checkm.txt")
                     
-                    if (( $(echo "$COMPLETION >= 50 && $CONTAMINATION < 5" | bc -l) )); then
+                    echo "Processing $BIN_ID: COMPLETION=$COMPLETION, CONTAMINATION=$CONTAMINATION"
+                    
+                    # Verify extracted values
+                    if [[ -z "$COMPLETION" || -z "$CONTAMINATION" ]]; then
+                        echo "⚠️ Warning: COMPLETION or CONTAMINATION not found for $BIN_ID in checkm.txt"
+                        continue
+                    fi
+                    
+                    echo "✅ Extracted COMPLETION=$COMPLETION and CONTAMINATION=$CONTAMINATION for $BIN_ID"
+                    
+                    if (( $(echo "$COMPLETION >= 50" | bc -l) && $(echo "$CONTAMINATION < 5" | bc -l) )); then
                         FILE_TYPE="MAG"
                         FILE_INDEX=$(printf "%03d" $MAG_COUNT)
                         ((MAG_COUNT++))
@@ -71,6 +83,3 @@ for dir in "$RAW_DATA"/DNA*; do
         cp "$dir/gtdb.gtdbtk.tax" "$COMBINED_DATA/${CULTURE_NAME}-GTDB-TAX.txt"
     fi
 done
-
-# Cleanup temporary mapping file
-rm sample_map.txt
