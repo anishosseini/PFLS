@@ -1,0 +1,9 @@
+	
+awk '/ ! NR!/ BEGIN{
+	salary=$4
+	max_salar=0}
+	{FS=","} 
+	if (salary > max_salary) max_salary=salary;
+END
+
+	{print salary}
